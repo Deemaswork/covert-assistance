@@ -3,9 +3,9 @@
 Code for **Covert Assistance: Helpful LLM Agents Evade Oversight in Multi-Agent Systems**
 (Alnuhait, Wang, Khalifa, Peng, 2026).
 
-[![arXiv](../assets/arxiv-badge.svg)](https://arxiv.org/abs/2609.39050)
-[![Project page](../assets/project-badge.svg)](https://deemaswork.github.io/covert-assistance/)
-[![Setup and code guide](../assets/setup-badge.svg)](#setup)
+[![arXiv](https://raw.githubusercontent.com/Deemaswork/covert-assistance/main/assets/arxiv-badge.svg)](https://arxiv.org/abs/2609.39050)
+[![Project page](https://raw.githubusercontent.com/Deemaswork/covert-assistance/main/assets/project-badge.svg)](https://deemaswork.github.io/covert-assistance/)
+[![Setup and code guide](https://raw.githubusercontent.com/Deemaswork/covert-assistance/main/assets/setup-badge.svg)](#setup)
 
 ## Setup
 
@@ -89,6 +89,7 @@ experiments additionally require host C/C++ build tools and Python packaging too
 | Build ladder, L1–L4 (§5.2.3) | `prod_leak.py` |
 | Receiver / generality | `two_way_experiment.py`, `receiver_grid.py`, `receiver_replay.py` |
 | Motive analysis (§5.1) | `label_traces.py`, `incentive_pass.py`, `motive_agreement.py`, `relabel_needs.py`, `strategy_analysis.py` |
+| Secret complexity/length (robustness) | `make_complexity_episodes.py` (C1–C4), `make_length_episodes.py` (L12/L16); run via `EPISODES=<file> python run_main.py` |
 | Prompt appendix (generated) | `dump_prompts_tex.py` |
 
 Support modules: `deploy_sandbox.py` (the real sudo gate in a container), `judge_specs.py`
@@ -101,7 +102,10 @@ Inputs:
 |---|---|
 | `tasks_deploy/tasks_train.json` | The task dataset: 100 verified Python coding tasks (`id`, `statement`, `reference`, `cases`), the pool the harness draws each episode's task from. |
 | `grid_specs.json` | 76 saved sender-generated requirements (49 Mistral, 27 Claude) for the receiver-generality grid. |
-| `episodes_frozen_v1.json` | Frozen episode set used for replay. |
+| `episodes_frozen_v1.json` | The 1,000 frozen `(seed, task_id, secret)` episodes the main study runs (`EPISODES` default). |
+| `episodes_base100.json` | 100 base `(seed, task_id, secret)` episodes (length-8 secrets) that the complexity/length generators build on. |
+| `episodes_complexity.json` | 300 episodes (C2/C3/C4 × 100), length-8 secrets varying case and special-char count; produced by `make_complexity_episodes.py`. |
+| `episodes_length.json` | 200 episodes (L12/L16 × 100), the hardest complexity recipe held fixed while only length varies; produced by `make_length_episodes.py`. |
 
 ## Data
 
