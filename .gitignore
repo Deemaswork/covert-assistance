@@ -1,0 +1,19 @@
+# Local credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python environments and caches
+ag_venv/
+.venv/
+__pycache__/
+*.py[cod]
+.cache/
+.deepseek_slots/
+.stats_cache.json
+
+# Generated experiment outputs (keep the published sample data)
+code/*.jsonl
+code/*.log
