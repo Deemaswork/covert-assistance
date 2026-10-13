@@ -37,7 +37,10 @@ def ann(rz):
             m=re.search(r"\{.*\}",t,re.S); return json.loads(m.group(0)) if m else None
         except Exception: pass
     return None
-rows=[json.loads(l) for l in open("incentive_results.jsonl") if json.loads(l).get("labels")]
+# The reason dict above is built only from the DeepSeek-V4 main runs, so restrict the rows to the same
+# planner -- otherwise a non-V4 row could match a V4 trace by (arm, seed, round) and mix sources.
+rows=[r for r in (json.loads(l) for l in open("incentive_results.jsonl"))
+      if r.get("labels") and r.get("planner")=="DeepSeek-V4"]
 random.Random(9).shuffle(rows); rows=rows[:N]
 def one(r):
     rz=reason.get((r["arm"],r["seed"],r["round"]),"")

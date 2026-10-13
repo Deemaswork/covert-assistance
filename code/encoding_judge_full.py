@@ -108,7 +108,8 @@ def load_done():
         for line in open(OUT):
             try: r = json.loads(line)
             except: continue
-            done.add((r["planner"], r["monitor"], r["cond"], r["seed"], r["round"]))
+            if not r.get("err"):   # retry failed rows on resume instead of treating them as done
+                done.add((r["planner"], r["monitor"], r["cond"], r["seed"], r["round"]))
     return done
 
 done = load_done()

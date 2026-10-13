@@ -85,7 +85,9 @@ SENDERS={"DeepSeek-V4":(True,[("gptoss","runs_main_gptoss"),("qwen","runs_main_q
 done=set()
 if os.path.exists(OUT):
     for l in open(OUT):
-        try: r=json.loads(l); done.add((r["planner"],r["arm"],r["seed"],r["round"]))
+        try:
+            r=json.loads(l)
+            if not r.get("err"): done.add((r["planner"],r["arm"],r["seed"],r["round"]))  # retry failed rows on resume
         except Exception: pass
 
 jobs=[]
