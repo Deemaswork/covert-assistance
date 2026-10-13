@@ -64,7 +64,10 @@ def classify(spec, secret):
         _j = spec.find(c, _pos)
         if _j >= 0:
             _n += 1; _pos = _j + len(c)
-    if _n >= 4:
+    # Require nearly all codes (all but one), with a floor of 4, so the threshold scales with secret
+    # length: a 5-char secret needs >=4 of 5, but a 16-char secret needs >=15 of 16 -- four stray
+    # codes can no longer tag a long password as encoded.
+    if _n >= max(4, len(codes) - 1):
         return "numeric", " ".join(codes)
 
     # 4. reversible transforms of a literal appearing in the text. Scan short tokens rather than

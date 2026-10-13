@@ -81,8 +81,10 @@ N=len(traces); print(f"{N} traces | {len(CONCEPTS)} concepts EACH ALONE | gpt-5.
 def run_one(key,desc,model,tag):
     out=[None]*N          # None = annotation failed/unparseable: excluded from agreement, NOT counted False
     def one(i):
-        d=jobj(chat(model,PROMPT(key,desc,traces[i]),600))
-        return i, (None if not d else (d.get("present",{}).get(key) is True))
+        d=jobj(chat(model,PROMPT(key,desc,traces[i]),600)); pres=d.get("present")
+        # pres is None when the call failed or the response lacked a 'present' object -> exclude (None).
+        # pres={} is a valid "nothing present" answer -> the key is legitimately absent -> False.
+        return i, (None if pres is None else (pres.get(key) is True))
     with ThreadPoolExecutor(PAR) as ex:
         n=0
         for f in as_completed([ex.submit(one,i) for i in range(N)]):
@@ -95,6 +97,9 @@ print(f"\n{'concept':<26}{'fld':>5}{'gpt%':>6}{'cla%':>6}{'both%':>7}{'ALONE':>7
 for key,desc,fld in CONCEPTS:
     g=run_one(key,desc,"gpt-5.5",f"gpt-{key[:8]}"); c=run_one(key,desc,"claude-sonnet-4-5",f"cla-{key[:8]}")
     valid=[i for i in range(N) if g[i] is not None and c[i] is not None]; nv=len(valid)
+    if nv==0:
+        res[key]=dict(gpt=g,claude=c,pabak=None,fld=fld,n=0)
+        print(f"{key:<26}{fld:>5}{'-- no valid annotations --':>36}",flush=True); continue
     gp=sum(g[i] for i in valid); cp=sum(c[i] for i in valid)
     both=sum(g[i] and c[i] for i in valid); agr=(sum(g[i]==c[i] for i in valid)/nv) if nv else 0.0
     pab=2*agr-1; res[key]=dict(gpt=g,claude=c,pabak=pab,fld=fld,n=nv)
@@ -103,5 +108,7 @@ for key,desc,fld in CONCEPTS:
     _gp=GROUPED.get(key); _gps=f"{_gp:>9.2f}" if _gp is not None else f"{'n/a':>9}"
     _pct=lambda x:(100*x/nv) if nv else 0.0
     print(f"{key:<26}{fld:>5}{_pct(gp):>5.0f}%{_pct(cp):>5.0f}%{_pct(both):>6.0f}%{pab:>7.2f}{_gps}",flush=True)
+print("  (grouped = PABAK from a reference DeepSeek-V4 theme_final run, for comparison only; shown as "
+      "n/a when the fresh run's concept names differ from that reference)")
 json.dump(res,open(os.path.join(HERE,"codebook_alone_out.json"),"w"))
 print("\nsaved codebook_alone_out.json")

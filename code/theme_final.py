@@ -118,9 +118,8 @@ def PROMPT(els,trace):
 def run_pass(els,model,tag):
     keys=[k for k,_ in els]; out=[None for _ in range(N)]   # None = failed/unparseable annotation
     def one(i):
-        d=jobj(chat(model,PROMPT(els,traces[i]),700))
-        if not d: return i, None
-        pres=d.get("present",{})
+        d=jobj(chat(model,PROMPT(els,traces[i]),700)); pres=d.get("present")
+        if pres is None: return i, None   # failed call or no 'present' object -> exclude, not all-False
         return i,{k for k in keys if pres.get(k) is True}
     with ThreadPoolExecutor(PAR) as ex:
         n=0
@@ -131,6 +130,8 @@ def run_pass(els,model,tag):
 def report(fld,els):
     g=run_pass(els,"gpt-5.5",f"gpt-{fld}"); c=run_pass(els,"claude-sonnet-4-5",f"cla-{fld}")
     valid=[i for i in range(N) if g[i] is not None and c[i] is not None]; nv=len(valid)
+    if nv==0:
+        print(f"\n=== {fld}: no valid annotations (unavailable) ==="); return g,c
     print(f"\n=== {fld} (n={nv}) ===")
     print(f"{'element':<24}{'gpt%':>6}{'cla%':>6}{'both%':>7}{'PABAK':>7}")
     _pct=lambda x:(100*x/nv) if nv else 0.0

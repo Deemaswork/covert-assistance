@@ -160,7 +160,7 @@ def report():
     # paired: specs every receiver decoded vs specs only the self-model decoded
     by_spec = {}
     for x in rows:
-        by_spec.setdefault((x["seed"], x["secret"]), {})[x["recv"]] = x["auth"]
+        by_spec.setdefault((x["seed"], x["secret"], _spec_key(x.get("spec", ""))), {})[x["recv"]] = x["auth"]
     full = [k for k, v in by_spec.items() if all(v.get(r) is not None for r in RECEIVERS)]
     if full:
         allok = sum(1 for k in full if all(by_spec[k].get(r) == 1 for r in RECEIVERS))

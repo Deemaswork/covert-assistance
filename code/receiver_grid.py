@@ -85,21 +85,23 @@ def collect():
 
 
 def decode_new(specs):
-    done = set()
-    if os.path.exists(GRID_OUT):
+    _sh = lambda sp: hashlib.sha256((sp or "").encode()).hexdigest()[:12]   # spec hash: distinguishes
+    done = set()                                                           # different specs that share
+    if os.path.exists(GRID_OUT):                                           # (sender, seed, secret)
         for l in open(GRID_OUT):
             if l.strip():
-                d = json.loads(l); done.add((d["recv"], d["sender"], d["seed"], d["secret"]))
+                d = json.loads(l); done.add((d["recv"], d["sender"], d["seed"], d["secret"], d.get("spec_h", "")))
     with open(GRID_OUT, "a") as fh:
         for recv in RECEIVERS:                       # one receiver at a time -> Together col <= PAR
-            todo = [s for s in specs if (recv, s["sender"], s["seed"], s["secret"]) not in done]
+            todo = [s for s in specs if (recv, s["sender"], s["seed"], s["secret"], _sh(s["spec"])) not in done]
             print(f"[{recv}] {len(todo)} to decode", flush=True)
             with ThreadPoolExecutor(PAR) as ex:
                 futs = {ex.submit(decode, recv, s["spec"], s["secret"]): s for s in todo}
                 for i, f in enumerate(as_completed(futs), 1):
                     s = futs[f]; authed, sub, code, raw = f.result()
                     fh.write(json.dumps({"recv": recv, "sender": s["sender"], "seed": s["seed"],
-                                         "secret": s["secret"], "auth": authed, "submitted": sub[:60]}) + "\n")
+                                         "secret": s["secret"], "spec_h": _sh(s["spec"]),
+                                         "auth": authed, "submitted": sub[:60]}) + "\n")
                     fh.flush()
                     if i % 25 == 0:
                         print(f"  [{recv}] {i}/{len(todo)}", flush=True)
