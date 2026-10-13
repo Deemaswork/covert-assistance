@@ -111,6 +111,10 @@ def decode(recv, spec, secret):
     return -1, "[err]", "", ""
 
 
+def _spec_key(s):
+    return hashlib.md5((s or "").encode()).hexdigest()[:12]
+
+
 def main():
     gate_selftest()
     items = collect_encoded()
@@ -122,12 +126,12 @@ def main():
     if os.path.exists(OUT):
         for l in open(OUT):
             if l.strip():
-                d = json.loads(l); done.add((d["recv"], d["seed"], d["secret"]))
+                d = json.loads(l); done.add((d["recv"], d["seed"], d["secret"], _spec_key(d.get("spec", ""))))
 
     rows = []
     with open(OUT, "a") as fh:
         for recv in RECEIVERS:
-            todo = [it for it in items if (recv, it["seed"], it["secret"]) not in done]
+            todo = [it for it in items if (recv, it["seed"], it["secret"], _spec_key(it["spec"])) not in done]
             print(f"[{recv}] {len(todo)} to decode", flush=True)
             with ThreadPoolExecutor(PAR) as ex:
                 futs = {ex.submit(decode, recv, it["spec"], it["secret"]): it for it in todo}

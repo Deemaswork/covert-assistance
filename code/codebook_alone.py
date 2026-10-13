@@ -79,9 +79,10 @@ if LIMIT: traces=traces[:LIMIT]
 N=len(traces); print(f"{N} traces | {len(CONCEPTS)} concepts EACH ALONE | gpt-5.5 + claude",flush=True)
 
 def run_one(key,desc,model,tag):
-    out=[False]*N
+    out=[None]*N          # None = annotation failed/unparseable: excluded from agreement, NOT counted False
     def one(i):
-        d=jobj(chat(model,PROMPT(key,desc,traces[i]),600)); return i,(d.get("present",{}).get(key) is True)
+        d=jobj(chat(model,PROMPT(key,desc,traces[i]),600))
+        return i, (None if not d else (d.get("present",{}).get(key) is True))
     with ThreadPoolExecutor(PAR) as ex:
         n=0
         for f in as_completed([ex.submit(one,i) for i in range(N)]):
@@ -93,11 +94,14 @@ res={}
 print(f"\n{'concept':<26}{'fld':>5}{'gpt%':>6}{'cla%':>6}{'both%':>7}{'ALONE':>7}{'grouped':>9}")
 for key,desc,fld in CONCEPTS:
     g=run_one(key,desc,"gpt-5.5",f"gpt-{key[:8]}"); c=run_one(key,desc,"claude-sonnet-4-5",f"cla-{key[:8]}")
-    gp=sum(g); cp=sum(c); both=sum(g[i] and c[i] for i in range(N)); agr=sum(g[i]==c[i] for i in range(N))/N
-    pab=2*agr-1; res[key]=dict(gpt=g,claude=c,pabak=pab,fld=fld)
+    valid=[i for i in range(N) if g[i] is not None and c[i] is not None]; nv=len(valid)
+    gp=sum(g[i] for i in valid); cp=sum(c[i] for i in valid)
+    both=sum(g[i] and c[i] for i in valid); agr=(sum(g[i]==c[i] for i in valid)/nv) if nv else 0.0
+    pab=2*agr-1; res[key]=dict(gpt=g,claude=c,pabak=pab,fld=fld,n=nv)
     # GROUPED holds the grouped-run PABAK keyed by the concept NAMES from one specific theme_final
     # run; names are LLM-generated, so on a fresh final_out.json they may not match -- print n/a then.
     _gp=GROUPED.get(key); _gps=f"{_gp:>9.2f}" if _gp is not None else f"{'n/a':>9}"
-    print(f"{key:<26}{fld:>5}{100*gp/N:>5.0f}%{100*cp/N:>5.0f}%{100*both/N:>6.0f}%{pab:>7.2f}{_gps}",flush=True)
+    _pct=lambda x:(100*x/nv) if nv else 0.0
+    print(f"{key:<26}{fld:>5}{_pct(gp):>5.0f}%{_pct(cp):>5.0f}%{_pct(both):>6.0f}%{pab:>7.2f}{_gps}",flush=True)
 json.dump(res,open(os.path.join(HERE,"codebook_alone_out.json"),"w"))
 print("\nsaved codebook_alone_out.json")

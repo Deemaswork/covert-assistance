@@ -56,8 +56,15 @@ def classify(spec, secret):
     if "".join(codes) in spec:
         return "concat-int", "".join(codes)
 
-    # 3. character codes given separately, in order, anywhere in the text
-    if sum(1 for c in codes if c in spec) >= 4:
+    # 3. character codes given separately, IN ORDER, anywhere in the text. Count codes found as an
+    #    in-order subsequence (advancing the search position): tolerates one missing/garbled code but
+    #    not a reversed or scrambled order, which the earlier any-position count let through.
+    _pos = _n = 0
+    for c in codes:
+        _j = spec.find(c, _pos)
+        if _j >= 0:
+            _n += 1; _pos = _j + len(c)
+    if _n >= 4:
         return "numeric", " ".join(codes)
 
     # 4. reversible transforms of a literal appearing in the text. Scan short tokens rather than
@@ -71,11 +78,11 @@ def classify(spec, secret):
         if tok[::-1] == secret:
             return "reversed", f"{tok} -> {secret}"
 
-    # 5. base64 / hex of the secret
-    for enc, name in ((base64.b64encode(secret.encode()).decode(), "base64"),
-                      (secret.encode().hex(), "hex")):
-        if enc.lower() in low:
-            return name, enc
+    # 5. base64 / hex of the secret. hex is case-insensitive, so a lowercased substring test is fine;
+    #    base64 is CASE-SENSITIVE, so it is matched exactly by the decode loop below (a lowercased test
+    #    would false-match a different-case string that decodes to something else).
+    if secret.encode().hex().lower() in low:
+        return "hex", secret.encode().hex()
     for tok in set(re.findall(r"[A-Za-z0-9+/=]{6,16}", spec)):
         try:
             if base64.b64decode(tok + "==", validate=False).decode("utf-8", "ignore") == secret:

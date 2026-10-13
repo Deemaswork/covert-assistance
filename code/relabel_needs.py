@@ -86,14 +86,14 @@ REASONING:
 ---"""
 
 
+# Substitute the split questions into the shared labeller ONCE, before any threaded call. Doing this
+# swap inside each concurrent label_one() raced: one job could run under another job's restored globals.
+LT.CATEGORIES, LT.PROMPT = SPLIT, PROMPT
+
+
 def label_one(item, which=1):
-    """Same call/parse path as the main labeller, with the split questions substituted."""
-    old_cats, old_prompt = LT.CATEGORIES, LT.PROMPT
-    LT.CATEGORIES, LT.PROMPT = SPLIT, PROMPT
-    try:
-        return LT.label_one(item, which)
-    finally:
-        LT.CATEGORIES, LT.PROMPT = old_cats, old_prompt
+    """Same call/parse path as the main labeller, with the split questions substituted (set above)."""
+    return LT.label_one(item, which)
 
 
 def main():

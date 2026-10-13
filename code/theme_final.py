@@ -116,9 +116,11 @@ def PROMPT(els,trace):
       '{"present": {"<element>": true, ...}, "quotes": {"<element>": "<verbatim sentence>", ...}}\n\n'
       f"REASONING:\n---\n{trace[:2000]}\n---")
 def run_pass(els,model,tag):
-    keys=[k for k,_ in els]; out=[set() for _ in range(N)]
+    keys=[k for k,_ in els]; out=[None for _ in range(N)]   # None = failed/unparseable annotation
     def one(i):
-        d=jobj(chat(model,PROMPT(els,traces[i]),700)); pres=d.get("present",{})
+        d=jobj(chat(model,PROMPT(els,traces[i]),700))
+        if not d: return i, None
+        pres=d.get("present",{})
         return i,{k for k in keys if pres.get(k) is True}
     with ThreadPoolExecutor(PAR) as ex:
         n=0
@@ -128,12 +130,15 @@ def run_pass(els,model,tag):
     return out
 def report(fld,els):
     g=run_pass(els,"gpt-5.5",f"gpt-{fld}"); c=run_pass(els,"claude-sonnet-4-5",f"cla-{fld}")
-    print(f"\n=== {fld} (n={N}) ===")
+    valid=[i for i in range(N) if g[i] is not None and c[i] is not None]; nv=len(valid)
+    print(f"\n=== {fld} (n={nv}) ===")
     print(f"{'element':<24}{'gpt%':>6}{'cla%':>6}{'both%':>7}{'PABAK':>7}")
+    _pct=lambda x:(100*x/nv) if nv else 0.0
     for k,_ in els:
-        gp=sum(k in g[i] for i in range(N)); cp=sum(k in c[i] for i in range(N))
-        both=sum((k in g[i]) and (k in c[i]) for i in range(N)); agr=sum((k in g[i])==(k in c[i]) for i in range(N))/N
-        print(f"{k:<24}{100*gp/N:>5.0f}%{100*cp/N:>5.0f}%{100*both/N:>6.0f}%{2*agr-1:>7.2f}")
+        gp=sum(k in g[i] for i in valid); cp=sum(k in c[i] for i in valid)
+        both=sum((k in g[i]) and (k in c[i]) for i in valid)
+        agr=(sum((k in g[i])==(k in c[i]) for i in valid)/nv) if nv else 0.0
+        print(f"{k:<24}{_pct(gp):>5.0f}%{_pct(cp):>5.0f}%{_pct(both):>6.0f}%{2*agr-1:>7.2f}")
     return g,c
 res={}
 res["GOAL"]=report("GOAL (bottom-up)",GOAL)
