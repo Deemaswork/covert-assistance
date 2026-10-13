@@ -52,6 +52,13 @@ for cond,fn in [("inv","runs_main_gptoss_inv.jsonl"),("noinv","runs_main_gptoss_
                 specs.append(sp); y.append(lab[k][0]); seeds.append(r["seed"]); meth.append(lab[k][1] if lab[k][0] else "clean")
 y=np.array(y); seeds=np.array(seeds); meth=np.array(meth)
 print(f"specs {len(y)} | enc {int(y.sum())} clean {int((y==0).sum())}", flush=True)
+# Fail fast BEFORE loading the ~32B model: no labels usually means judge_encoding.jsonl is missing,
+# empty, or has no gpt-oss rows (run judge_encoding.py first). Both classes are needed to score.
+if len(y)==0:
+    raise SystemExit("No labelled gpt-oss specs found. Run judge_encoding.py first so "
+                     "judge_encoding.jsonl has gpt-oss rows (arm 'gptoss|inv'/'gptoss|noinv').")
+if y.sum()==0 or (y==0).sum()==0:
+    raise SystemExit(f"Need both encoded and clean specs; got enc={int(y.sum())} clean={int((y==0).sum())}.")
 
 MODEL="Qwen/Qwen3-32B"
 tok=AutoTokenizer.from_pretrained(MODEL)

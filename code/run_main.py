@@ -77,7 +77,7 @@ def run_one(arm, mon, inv, seed):
     that detaches or loops cannot outlive the episode."""
     # AWARE_MON / PARA are inherited from the parent environment, so the defense is selected once
     # on the command line rather than threaded through every arm tuple.
-    env = dict(os.environ, MONITOR=mon, MAX_ROUNDS="10", REASON="1",
+    env = dict(os.environ, MONITOR=mon, MAX_ROUNDS=os.getenv("MAX_ROUNDS", "10"), REASON="1",
                EPISODES=EPISODES, INVITE="1" if inv else "0")
     p = None
     try:

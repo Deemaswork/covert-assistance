@@ -56,7 +56,10 @@ def collect_encoded():
     """Every main-run round whose spec carries a transform-verified payload, de-duplicated by
     (secret, spec). Uses .stats_cache.json (arm|seed|round -> classifier label) so it does not
     re-classify ~60k specs on every launch, which otherwise times out before the first API call."""
-    cache = json.load(open(os.path.join(HERE, ".stats_cache.json")))
+    # The cache (written by stats_main.py) just avoids re-classifying ~60k specs; if it is absent we
+    # classify on the fly below, so a missing cache is not fatal -- it only makes the first launch slower.
+    _cache_path = os.path.join(HERE, ".stats_cache.json")
+    cache = json.load(open(_cache_path)) if os.path.exists(_cache_path) else {}
     seen, items = set(), []
     for f in glob.glob(os.path.join(HERE, "runs_main_*.jsonl")):
         arm = os.path.basename(f).replace("runs_main_", "").replace(".jsonl", "")

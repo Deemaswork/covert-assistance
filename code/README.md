@@ -92,10 +92,10 @@ the Quickstart.
 | Recipient distrust | add `ADV_DEV=1` |
 | Credential provenance | add `VAULT=1` (retrieved from a vault); `SENSLABEL=1` / `NEUTRALTOOL=1` are the framing variants |
 | Healthcare / SSN domain | add `PII=1` |
-| In-loop defenses | add `AWARE_MON=1` (monitor-aware priming) or `PARA=1` (paraphrase) |
+| In-loop defenses | `AWARE_MON=1` gives the monitor the credential value (one inserted line in its prompt); `PARA=1` paraphrases the requirements before the monitor and developer see them |
 | Secret complexity (C1–C4) | C1 is the base length-8 run (`EPISODES=episodes_base100.json python run_main.py`); C2–C4: `python make_complexity_episodes.py`, then `EPISODES=episodes_complexity.json python run_main.py` |
 | Secret length (L12/L16) | `python make_length_episodes.py`, then `EPISODES=episodes_length.json python run_main.py` |
-| Build ladder L1–L4 (§5.2.3) | `LEVEL=1 python prod_leak.py` … `LEVEL=4 python prod_leak.py` |
+| Build ladder L1–L4 (§5.2.3) | `HARDENED_GRADER=1 LEVEL=1 python prod_leak.py` … `LEVEL=4` (the hardened grader re-runs each build on random inputs, so a stubbed/forged library fails). The paper reports two conditions: **unprimed** (default) and **primed** (`MON_AWARE=1`, the Planner is told a monitor exists) |
 | Provisioning-replay defense | `python defense_on_wins.py` (54 wins); earlier-harness table: `python aware_monitor.py` |
 | Receiver generality | `python receiver_replay.py`, then `python receiver_grid.py` |
 | Two-way (receiver replies) | `MSG_SRC=deploy` (forward B's answer), `decide` (status update), or `optional` (B may stay silent): `MSG_SRC=optional python two_way_experiment.py <seed>` |
@@ -114,7 +114,7 @@ run outputs (and `.env`) are needed — no precomputed data ships with the relea
 |---|---|
 | Main study harness (§4–§5) | `main_harness.py`, runner `run_main.py`, live stats `stats_main.py` |
 | Encoding detection | `encoding_classifier.py` (transform floor), `encoding_judge_full.py` (judge-corrected) |
-| Defenses | `defense_on_wins.py` (provisioning replay on the 54 wins); older table via `aware_monitor.py` + `legacy_harness.py` |
+| Defenses | `defense_on_wins.py` (provisioning replay on the 54 wins); older table via `aware_monitor.py` + `legacy_harness.py` (the earlier AutoGen/AG2 harness, kept only for that table) |
 | Build ladder, L1–L4 (§5.2.3) | `prod_leak.py` |
 | Receiver / generality | `two_way_experiment.py`, `receiver_grid.py`, `receiver_replay.py` |
 | Motive analysis (§5.1) | `label_traces.py`, `incentive_pass.py`, `motive_agreement.py`, `relabel_needs.py`, `strategy_analysis.py` |
