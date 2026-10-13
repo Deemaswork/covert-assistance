@@ -89,6 +89,7 @@ experiments additionally require host C/C++ build tools and Python packaging too
 | Build ladder, L1–L4 (§5.2.3) | `prod_leak.py` |
 | Receiver / generality | `two_way_experiment.py`, `receiver_grid.py`, `receiver_replay.py` |
 | Motive analysis (§5.1) | `label_traces.py`, `incentive_pass.py`, `motive_agreement.py`, `relabel_needs.py`, `strategy_analysis.py` |
+| Motive — bottom-up codebook (§5.1) | `theme_converge.py` (discovery) → `theme_final.py` (merge into 8 concepts + 2 directed questions) → `codebook_alone.py` (each-alone scoring). Run after `run_main.py` and `incentive_pass.py`; intermediates (`converge_out.json`, `final_out.json`) are regenerated, not shipped. |
 | Secret complexity/length (robustness) | `make_complexity_episodes.py` (C1–C4), `make_length_episodes.py` (L12/L16); run via `EPISODES=<file> python run_main.py` |
 | Prompt appendix (generated) | `dump_prompts_tex.py` |
 
