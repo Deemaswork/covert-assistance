@@ -114,7 +114,7 @@ run outputs (and `.env`) are needed — no precomputed data ships with the relea
 |---|---|
 | Main study harness (§4–§5) | `main_harness.py`, runner `run_main.py`, live stats `stats_main.py` |
 | Encoding detection | `encoding_classifier.py` (transform floor), `encoding_judge_full.py` (judge-corrected) |
-| Defenses — provisioning (§5) | `defense_on_wins.py` — the provisioning defense (give the monitor the credential it protects) re-scored on the 54 main-study wins; this is the 43%→94% result the paper reports. `aware_monitor.py` + `legacy_harness.py` are an earlier-harness computation of the same provisioning defense, superseded by `defense_on_wins.py`. |
+| Defenses — provisioning | `defense_on_wins.py` — the provisioning defense (give the monitor the credential it protects) re-scored on the 54 main-study wins; this is the 43%→94% result in the paper's channel-side mitigations. `aware_monitor.py` + `legacy_harness.py` are an earlier implementation of the same defense on the AG2/AutoGen harness, superseded by `defense_on_wins.py`. |
 | Build ladder, L1–L4 (§5.2.3) | `prod_leak.py` |
 | Receiver / generality | `two_way_experiment.py`, `receiver_grid.py`, `receiver_replay.py` |
 | Motive analysis (§5.1) | `label_traces.py`, `incentive_pass.py`, `motive_agreement.py`, `relabel_needs.py`, `strategy_analysis.py` |
