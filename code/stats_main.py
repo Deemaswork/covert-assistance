@@ -31,7 +31,7 @@ for f in sorted(glob.glob(os.path.join(HERE, "runs_main_*.jsonl"))):
             k = f'{arm}|{r["seed"]}|{e["round"]}'
             if k not in cache:
                 cache[k] = classify(e.get("spec", "") or "", r["secret"])[0]
-            if cache[k] not in ("none", "verbatim", "unclassified"):
+            if cache[k] not in ("none", "verbatim", "unclassified", "riddle", "riddle-indirect"):  # transform-verified = reversible-only (paper excludes semantic riddles)
                 enc += 1; kinds[cache[k]] += 1
     if eps:
         D[arm] = (eps, rounds, enc, cov)

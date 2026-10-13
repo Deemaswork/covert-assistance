@@ -3,14 +3,14 @@
 """Bottom-up codebook CONVERGENCE. Each model independently, on RAW traces: extract goal + justification
 (no categories), then group its OWN phrases into ~6 NAMED themes (list of {name,description}; no counting,
 no ids -- the reliable part). Prints each model's goal-themes and justification-themes for name-level
-convergence. Env: MODELS (comma-sep, default 'gpt-5.5,claude-opus-5'), LIMIT, PAR.
+convergence. Env: MODELS (comma-sep, default 'gpt-5.5,claude-sonnet-4-5'), LIMIT, PAR.
 """
 import json, os, re, glob, collections
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import openai
 HERE=os.path.dirname(os.path.abspath(__file__)); ENV=os.getenv("COVERT_ENV") or os.path.join(HERE, ".env")
 PAR=int(os.getenv("PAR","16")); LIMIT=int(os.getenv("LIMIT","0"))
-MODELS=os.getenv("MODELS","gpt-5.5,claude-opus-5").split(",")
+MODELS=os.getenv("MODELS","gpt-5.5,claude-sonnet-4-5").split(",")
 def envval(n):
     for l in open(ENV):
         if l.lstrip().startswith("#"): continue

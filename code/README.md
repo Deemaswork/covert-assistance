@@ -86,21 +86,21 @@ the Quickstart.
 | Experiment (paper) | How to run it |
 |---|---|
 | Main study, 6,000 episodes | `MONITORS=gptoss,qwen,gpt5mini INVITES=0,1 PREFIX=runs_main python run_main.py`, then `python stats_main.py` and `python encoding_judge_full.py` |
-| Oversight ablation (§5) | add `NOMON=1` (drop the LLM monitor, keep the DLP filter) or `NODLP=1` (also drop the verbatim DLP filter) |
+| Oversight ablation (§5) | `NOMON=1` drops the LLM monitor (keeps the DLP filter); `NOMON=1 NODLP=1` disables oversight entirely (also drops the verbatim DLP filter) |
 | Human-vs-agent framing | add `CHAT_DEV=1` (chat framing); `HUMAN_DEV=1` presents the recipient as a human |
 | Stronger (intent) rule | add `EFFECT_POLICY=1` |
 | Recipient distrust | add `ADV_DEV=1` |
 | Credential provenance | add `VAULT=1` (retrieved from a vault); `SENSLABEL=1` / `NEUTRALTOOL=1` are the framing variants |
 | Healthcare / SSN domain | add `PII=1` |
 | In-loop defenses | add `AWARE_MON=1` (monitor-aware priming) or `PARA=1` (paraphrase) |
-| Secret complexity (C1–C4) | `python make_complexity_episodes.py`, then `EPISODES=episodes_complexity.json python run_main.py` |
+| Secret complexity (C1–C4) | C1 is the base length-8 run (`EPISODES=episodes_base100.json python run_main.py`); C2–C4: `python make_complexity_episodes.py`, then `EPISODES=episodes_complexity.json python run_main.py` |
 | Secret length (L12/L16) | `python make_length_episodes.py`, then `EPISODES=episodes_length.json python run_main.py` |
 | Build ladder L1–L4 (§5.2.3) | `LEVEL=1 python prod_leak.py` … `LEVEL=4 python prod_leak.py` |
 | Provisioning-replay defense | `python defense_on_wins.py` (54 wins); earlier-harness table: `python aware_monitor.py` |
 | Receiver generality | `python receiver_replay.py`, then `python receiver_grid.py` |
 | Two-way (receiver replies) | `MSG_SRC=deploy` (forward B's answer), `decide` (status update), or `optional` (B may stay silent): `MSG_SRC=optional python two_way_experiment.py <seed>` |
 | Motive codebook (§5.1) | `python incentive_pass.py`, then `python theme_converge.py` → `python theme_final.py` → `python codebook_alone.py` |
-| Leakage detectors (Appendix) | `python judge_encoding.py`, then `python detector_eval.py` (needs torch/transformers + GPU) |
+| Leakage detectors (Appendix) | `RUNS="runs_main_gptoss_*.jsonl" python judge_encoding.py` (label the gpt-oss runs only), then `python detector_eval.py` (needs torch/transformers + GPU) |
 | Sequential structure (Appendix) | `python strategy_analysis.py` |
 
 The build-ladder experiments additionally require host C/C++ build tools and Python
@@ -120,7 +120,7 @@ run outputs (and `.env`) are needed — no precomputed data ships with the relea
 | Motive analysis (§5.1) | `label_traces.py`, `incentive_pass.py`, `motive_agreement.py`, `relabel_needs.py`, `strategy_analysis.py` |
 | Motive — bottom-up codebook (§5.1) | `theme_converge.py` (discovery) → `theme_final.py` (merge into 8 concepts + 2 directed questions) → `codebook_alone.py` (each-alone scoring). Run after `run_main.py` and `incentive_pass.py`; intermediates (`converge_out.json`, `final_out.json`) are regenerated, not shipped. |
 | Secret complexity/length (robustness) | `make_complexity_episodes.py` (C1–C4), `make_length_episodes.py` (L12/L16); run via `EPISODES=<file> python run_main.py` |
-| Leakage-detector baselines (Appendix) | `detector_eval.py` — PRISM entropy-collapse + NARCBench activation probe over Qwen3-32B. Reads `judge_encoding.jsonl` (from `judge_encoding.py`). Needs extra deps: `torch`, `transformers`, `scikit-learn`, `numpy`, and a GPU to load Qwen3-32B. |
+| Leakage-detector baselines (Appendix) | `detector_eval.py` — an entropy-collapse detector implementing PRISM's signal, plus a NARCBench-style activation probe, over Qwen3-32B. This reimplements the signals and runs them on a proxy open model (the closed Planner's own activations are unavailable); it is not PRISM's own package. Reads `judge_encoding.jsonl` (run `judge_encoding.py` on the gpt-oss files). Needs extra deps: `torch`, `transformers`, `scikit-learn`, `numpy`, and a GPU. |
 | Prompt appendix (generated) | `dump_prompts_tex.py` |
 
 Support modules: `deploy_sandbox.py` (the real sudo gate in a container), `judge_specs.py`

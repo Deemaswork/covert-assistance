@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 # Paper: Detector baselines — PRISM entropy-collapse + NARCBench activation probe (Appendix app:detector)
-"""GENUINE comparison vs PRISM (entropy) and NARCBench (activation probe).
+"""Entropy-based leakage detector implementing PRISM's entropy-collapse signal, plus a
+NARCBench-style activation probe. This is a reimplementation of the two signals, not a run of
+PRISM's own package, and it probes a proxy open model rather than the closed Planner that
+generated the specs (whose activations are unavailable) -- see the caveat below.
 
 Forward-passes the labeled specs through an open-weight model (Qwen3-32B, a NARCBench
 model) and reads its internals:
@@ -27,8 +30,13 @@ def stream(p):
 lab={}
 for d in stream("judge_encoding.jsonl"):
     a=d.get("arm","")
-    if a not in ("gptoss_inv","gptoss_noinv"): continue
-    cond="inv" if a=="gptoss_inv" else "noinv"
+    # judge_encoding.py builds `arm` by stripping the monitor name (e.g. "main|inv"/"main|noinv"),
+    # so derive the invitation condition from the suffix rather than matching a fixed string. Because
+    # the monitor name is dropped, (arm,seed,round) is NOT unique across monitors -- run the judge on the
+    # gpt-oss files ONLY (RUNS="runs_main_gptoss_*.jsonl") so these labels match the gpt-oss specs below.
+    if a.endswith("noinv"): cond="noinv"
+    elif a.endswith("inv"): cond="inv"
+    else: continue
     lab[(cond,d["seed"],d["round"])]=(1 if d.get("encodes") else 0, d.get("cls") or "none")
 specs=[]; y=[]; seeds=[]; meth=[]
 for cond,fn in [("inv","runs_main_gptoss_inv.jsonl"),("noinv","runs_main_gptoss_noinv.jsonl")]:
