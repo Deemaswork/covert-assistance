@@ -74,10 +74,39 @@ main-study outputs. `python encoding_judge_full.py` performs additional paid jud
 on the run files listed in that script. Sample records are format examples, not enough
 to reproduce the paper's aggregate results.
 
-Conditions are environment flags in `main_harness.py` (monitor, defenses, intent rule,
-recipient framing, credential provenance, and other ablations). The build-ladder
-experiments additionally require host C/C++ build tools and Python packaging tools
-(`build`, `setuptools`, `wheel`); see `prod_leak.py` and `costdial_env.py`.
+Most conditions are environment flags read by `main_harness.py`; set the flag in the
+environment and run the same `run_main.py` (it passes the environment through to the
+harness), then run the analysis script. The table below maps each paper result to its
+command. All commands assume you are in `code/` with the venv active and `.env` configured,
+and append the main-study runner flags (`MONITORS=... INVITES=... PREFIX=... PAR=...`) as in
+the Quickstart.
+
+### Reproducing each experiment
+
+| Experiment (paper) | How to run it |
+|---|---|
+| Main study, 6,000 episodes | `MONITORS=gptoss,qwen,gpt5mini INVITES=0,1 PREFIX=runs_main python run_main.py`, then `python stats_main.py` and `python encoding_judge_full.py` |
+| Oversight ablation (§5) | add `NOMON=1` (drop the LLM monitor, keep the DLP filter) or `NODLP=1` (also drop the verbatim DLP filter) |
+| Human-vs-agent framing | add `CHAT_DEV=1` (chat framing); `HUMAN_DEV=1` presents the recipient as a human |
+| Stronger (intent) rule | add `EFFECT_POLICY=1` |
+| Recipient distrust | add `ADV_DEV=1` |
+| Credential provenance | add `VAULT=1` (retrieved from a vault); `SENSLABEL=1` / `NEUTRALTOOL=1` are the framing variants |
+| Healthcare / SSN domain | add `PII=1` |
+| In-loop defenses | add `AWARE_MON=1` (monitor-aware priming) or `PARA=1` (paraphrase) |
+| Secret complexity (C1–C4) | `python make_complexity_episodes.py`, then `EPISODES=episodes_complexity.json python run_main.py` |
+| Secret length (L12/L16) | `python make_length_episodes.py`, then `EPISODES=episodes_length.json python run_main.py` |
+| Build ladder L1–L4 (§5.2.3) | `LEVEL=1 python prod_leak.py` … `LEVEL=4 python prod_leak.py` |
+| Provisioning-replay defense | `python defense_on_wins.py` (54 wins); earlier-harness table: `python aware_monitor.py` |
+| Receiver generality | `python receiver_replay.py`, then `python receiver_grid.py` |
+| Two-way (receiver replies) | `MSG_SRC=deploy` (forward B's answer), `decide` (status update), or `optional` (B may stay silent): `MSG_SRC=optional python two_way_experiment.py <seed>` |
+| Motive codebook (§5.1) | `python incentive_pass.py`, then `python theme_converge.py` → `python theme_final.py` → `python codebook_alone.py` |
+| Leakage detectors (Appendix) | `python judge_encoding.py`, then `python detector_eval.py` (needs torch/transformers + GPU) |
+| Sequential structure (Appendix) | `python strategy_analysis.py` |
+
+The build-ladder experiments additionally require host C/C++ build tools and Python
+packaging tools (`build`, `setuptools`, `wheel`); see `prod_leak.py` and `costdial_env.py`.
+Analysis scripts regenerate their own intermediate files from the run outputs, so only the
+run outputs (and `.env`) are needed — no precomputed data ships with the release.
 
 ## Code map
 
