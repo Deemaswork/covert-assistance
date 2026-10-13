@@ -105,8 +105,13 @@ def collect():
     """Every round, tagged with the classifier's verdict and a stratum for sampling."""
     items = []
     for f in glob.glob(os.path.join(HERE, RUNS)):
-        arm = os.path.basename(f).split("_gptoss")[0].split("_qwen")[0].replace("runs_", "") + "|" + \
-              ("inv" if f.endswith("_inv.jsonl") else "noinv")
+        # Keep the monitor name IN the identifier so labels from different monitors never collide on
+        # (arm, seed, round) -- important when a single judge_encoding.jsonl spans more than one monitor.
+        base = os.path.basename(f)
+        mon = ("gptoss" if "gptoss" in base else "qwen" if "qwen" in base else
+               "gpt5mini" if "gpt5mini" in base else
+               base.replace("runs_main_", "").replace("_noinv.jsonl", "").replace("_inv.jsonl", ""))
+        arm = mon + "|" + ("inv" if base.endswith("_inv.jsonl") else "noinv")
         for line in open(f):
             if not line.strip().startswith("{"):
                 continue

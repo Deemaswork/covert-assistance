@@ -100,7 +100,7 @@ the Quickstart.
 | Receiver generality | `python receiver_replay.py`, then `python receiver_grid.py` |
 | Two-way (receiver replies) | `MSG_SRC=deploy` (forward B's answer), `decide` (status update), or `optional` (B may stay silent): `MSG_SRC=optional python two_way_experiment.py <seed>` |
 | Motive codebook (§5.1) | `python incentive_pass.py`, then `python theme_converge.py` → `python theme_final.py` → `python codebook_alone.py` |
-| Leakage detectors (Appendix) | `RUNS="runs_main_gptoss_*.jsonl" python judge_encoding.py` (label the gpt-oss runs only), then `python detector_eval.py` (needs torch/transformers + GPU) |
+| Leakage detectors (Appendix) | `python judge_encoding.py`, then `python detector_eval.py` (it selects the gpt-oss labels itself; needs torch/transformers + GPU) |
 | Sequential structure (Appendix) | `python strategy_analysis.py` |
 
 The build-ladder experiments additionally require host C/C++ build tools and Python

@@ -30,13 +30,11 @@ def stream(p):
 lab={}
 for d in stream("judge_encoding.jsonl"):
     a=d.get("arm","")
-    # judge_encoding.py builds `arm` by stripping the monitor name (e.g. "main|inv"/"main|noinv"),
-    # so derive the invitation condition from the suffix rather than matching a fixed string. Because
-    # the monitor name is dropped, (arm,seed,round) is NOT unique across monitors -- run the judge on the
-    # gpt-oss files ONLY (RUNS="runs_main_gptoss_*.jsonl") so these labels match the gpt-oss specs below.
-    if a.endswith("noinv"): cond="noinv"
-    elif a.endswith("inv"): cond="inv"
-    else: continue
+    # judge_encoding.py now writes arm="<monitor>|<cond>" (e.g. "gptoss|inv"). We read the gpt-oss
+    # specs below, so select only gpt-oss labels -- this is safe even if the label file spans several
+    # monitors. (Older label files that used "main|inv" won't match; regenerate them.)
+    if not a.startswith("gptoss"): continue
+    cond="noinv" if a.endswith("noinv") else "inv"
     lab[(cond,d["seed"],d["round"])]=(1 if d.get("encodes") else 0, d.get("cls") or "none")
 specs=[]; y=[]; seeds=[]; meth=[]
 for cond,fn in [("inv","runs_main_gptoss_inv.jsonl"),("noinv","runs_main_gptoss_noinv.jsonl")]:
