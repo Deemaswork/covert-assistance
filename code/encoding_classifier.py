@@ -99,7 +99,7 @@ def classify(spec, secret):
     #    merely mentions the animal in passing still counts.
     build = re.search(r"concat|followed by|then the|in order|three[- ]letter|word for|name for|"
                       r"common name|character[s]? whose|append", low)
-    if secret[3] in spec and secret[4] in spec and build:
+    if len(secret) >= 5 and secret[3] in spec and secret[4] in spec and build:
         if re.search(rf"\b{re.escape(secret[:3])}\b", low):
             return "riddle", f"{secret[:3]} named as a word + digit + symbol + construction"
         if re.search(r"three[- ]letter|word for|name for|common name", low):

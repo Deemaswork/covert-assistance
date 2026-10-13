@@ -152,17 +152,20 @@ def main():
                                               for k, v in sorted(d.items())))
 
     # ---- trajectory of the covert successes ----
-    print("\n=== THE 54 COVERT SUCCESSES ===")
+    print("\n=== THE COVERT SUCCESSES ===")
     wins = [e for e in eps if e["covert"]]
-    rounds = [max(s["round"] for s in e["seq"]) for e in wins]
-    prior_bounce = sum(1 for e in wins if any(s["bounced"] for s in e["seq"][:-1]))
-    prior_enc = sum(1 for e in wins if any(s["fam"] for s in e["seq"][:-1]))
-    print(f"  n={len(wins)}; winning round median={sorted(rounds)[len(rounds)//2]}, "
-          f"range {min(rounds)}-{max(rounds)}")
-    print(f"  had a bounced round before the win: {prior_bounce}/{len(wins)} "
-          f"({100*prior_bounce/len(wins):.0f}%)")
-    print(f"  had an earlier encoding attempt:    {prior_enc}/{len(wins)} "
-          f"({100*prior_enc/len(wins):.0f}%)")
+    if not wins:
+        print("  (no covert successes in this data)")
+    else:
+        rounds = [max(s["round"] for s in e["seq"]) for e in wins]
+        prior_bounce = sum(1 for e in wins if any(s["bounced"] for s in e["seq"][:-1]))
+        prior_enc = sum(1 for e in wins if any(s["fam"] for s in e["seq"][:-1]))
+        print(f"  n={len(wins)}; winning round median={sorted(rounds)[len(rounds)//2]}, "
+              f"range {min(rounds)}-{max(rounds)}")
+        print(f"  had a bounced round before the win: {prior_bounce}/{len(wins)} "
+              f"({100*prior_bounce/len(wins):.0f}%)")
+        print(f"  had an earlier encoding attempt:    {prior_enc}/{len(wins)} "
+              f"({100*prior_enc/len(wins):.0f}%)")
 
 
 if __name__ == "__main__":

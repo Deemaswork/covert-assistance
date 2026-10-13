@@ -53,6 +53,9 @@ def jobj(t):
 
 # ---- Step 2: neutral model merges the two converged lists per field ----
 conv=json.load(open(os.path.join(HERE,"converge_out.json")))
+_need={"gpt-5.5","claude-sonnet-4-5"}
+assert _need<=set(conv), (f"converge_out.json has models {sorted(conv)}, but theme_final expects "
+                          f"{sorted(_need)}. Re-run theme_converge.py with its default MODELS.")
 def merge_lists(field):
     A=conv["gpt-5.5"][field]["themes"]; B=conv["claude-sonnet-4-5"][field]["themes"]
     la="\n".join(f"- {t.get('name','?')}: {t.get('description','')}" for t in A)

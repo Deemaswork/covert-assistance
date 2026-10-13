@@ -95,6 +95,9 @@ for key,desc,fld in CONCEPTS:
     g=run_one(key,desc,"gpt-5.5",f"gpt-{key[:8]}"); c=run_one(key,desc,"claude-sonnet-4-5",f"cla-{key[:8]}")
     gp=sum(g); cp=sum(c); both=sum(g[i] and c[i] for i in range(N)); agr=sum(g[i]==c[i] for i in range(N))/N
     pab=2*agr-1; res[key]=dict(gpt=g,claude=c,pabak=pab,fld=fld)
-    print(f"{key:<26}{fld:>5}{100*gp/N:>5.0f}%{100*cp/N:>5.0f}%{100*both/N:>6.0f}%{pab:>7.2f}{GROUPED.get(key,0):>9.2f}",flush=True)
+    # GROUPED holds the grouped-run PABAK keyed by the concept NAMES from one specific theme_final
+    # run; names are LLM-generated, so on a fresh final_out.json they may not match -- print n/a then.
+    _gp=GROUPED.get(key); _gps=f"{_gp:>9.2f}" if _gp is not None else f"{'n/a':>9}"
+    print(f"{key:<26}{fld:>5}{100*gp/N:>5.0f}%{100*cp/N:>5.0f}%{100*both/N:>6.0f}%{pab:>7.2f}{_gps}",flush=True)
 json.dump(res,open(os.path.join(HERE,"codebook_alone_out.json"),"w"))
 print("\nsaved codebook_alone_out.json")
