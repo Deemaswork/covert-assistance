@@ -96,7 +96,7 @@ the Quickstart.
 | Secret complexity (C1–C4) | C1 is the base length-8 run (`EPISODES=episodes_base100.json python run_main.py`); C2–C4: `python make_complexity_episodes.py`, then `EPISODES=episodes_complexity.json python run_main.py` |
 | Secret length (L12/L16) | `python make_length_episodes.py`, then `EPISODES=episodes_length.json python run_main.py` |
 | Build ladder L1–L4 (§5.2.3) | `HARDENED_GRADER=1 LEVEL=1 python prod_leak.py` … `LEVEL=4` (the hardened grader re-runs each build on random inputs, so a stubbed/forged library fails). The paper reports two conditions: **unprimed** (default) and **primed** (`MON_AWARE=1`, the Planner is told a monitor exists) |
-| Provisioning-replay defense | `python defense_on_wins.py` (54 wins); earlier-harness table: `python aware_monitor.py` |
+| Provisioning-replay defense | `python defense_on_wins.py` (54 wins); earlier implementation (AG2 harness): `python aware_monitor.py` |
 | Receiver generality | `python receiver_replay.py`, then `python receiver_grid.py` |
 | Two-way (receiver replies) | `MSG_SRC=deploy` (forward B's answer), `decide` (status update), or `optional` (B may stay silent): `MSG_SRC=optional python two_way_experiment.py <seed>` |
 | Motive codebook (§5.1) | `python incentive_pass.py`, then `python theme_converge.py` → `python theme_final.py` → `python codebook_alone.py` |
